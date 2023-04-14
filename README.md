@@ -1,12 +1,20 @@
-Build Pipeline Syntax - https://docs.oracle.com/en-us/iaas/Content/devops/using/build_specs.htm
+# Node Application
 
+This application is built for deploying in Oracle cloud instances.
+It contains all the necessary config to run applications in the OCI environment.
 
-Deploy Pipeline Syntax - https://docs.oracle.com/en-us/iaas/Content/devops/using/deployment_specs.htm
+## Installation
 
+Use the package manager [NPM](https://www.npmjs.com/) to install the Application.
 
-<!-- Deploy Environment Query -  -->
+```bash
+npm i --save
+npm start
 
-freeformTags.key = 'app' && freeformTags.value = 'node' && lifecycleState = 'running'
+## Contributing
 
-https://docs.oracle.com/en-us/iaas/Content/Search/Concepts/querysyntax.htm
+Please make sure to update tests as appropriate.
 
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
