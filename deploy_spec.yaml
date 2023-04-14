@@ -1,0 +1,47 @@
+version: 1.0
+component: deployment
+runAs: root
+shell: bash
+env:
+  variables:
+    version: "1.0.0"
+  vaultVariables:
+    #  EXAMPLE_SECRET: "YOUR-SECRET-OCID"
+files:
+  # This section is to define how the files in the artifact is put on the compute instance.
+  # Multiple entires are supported using a separate source destination section for every entry.
+  - source: buildArcFiles.zip
+    destination: /var/www/html/artifact
+steps:
+  # This section is to define the scripts that each step runs on the instance after file copy.
+  - stepType: Command
+    name: Extract Artifact Content
+    command: |
+      sudo rm -rf /var/www/html/stage/
+      echo "Done Stage Dir Is Empty"
+      cd /var/www/html/artifact/
+      sudo unzip buildArcFiles.zip -d /var/www/html/stage/
+      sudo chmod -R 777  /var/www/html
+      echo "Done Extract Artifact Content"
+    runAs: root
+    timeoutInSeconds: 600 
+  - stepType: Command
+    name: Install Dependency
+    command: /var/www/html/stage/scripts/install_script.sh
+    runAs: root
+    timeoutInSeconds: 1200 
+  - stepType: Command
+    name: Install New Version of Software
+    command: /var/www/html/stage/scripts/start_script.sh
+    runAs: root
+    timeoutInSeconds: 600
+  - stepType: Command
+    name: Register Target Server
+    command: /var/www/html/stage/scripts/register_target_script.sh
+    runAs: root
+    timeoutInSeconds: 600 
+    onFailure:
+       - stepType: Command
+         command: /var/www/html/stage/scripts/stop_script.sh
+         name: "OnFailure step"
+         timeoutInSeconds: 1200
