@@ -1,0 +1,98 @@
+version: 0.1
+component: build
+timeoutInSeconds: 6000
+runAs: root
+shell: bash
+env:
+  # these are local variables to the build config
+  variables:
+    key: "value"
+
+  # the value of a vaultVariable is the secret-id (in OCI ID format) stored in the OCI Vault service
+  # you can then access the value of that secret in your build_spec.yaml commands
+  vaultVariables:
+  #  EXAMPLE_SECRET: "YOUR-SECRET-OCID"
+  
+  # exportedVariables are made available to use as parameters in sucessor Build Pipeline stages
+  # For this Build to run, the Build Pipeline needs to have a BUILDRUN_HASH parameter set
+  exportedVariables:
+    - BUILDRUN_HASH
+
+steps:
+  - type: Command
+    timeoutInSeconds: 1600
+    name: "Install Basic Dependency"
+    command: |
+      yum install zip
+    onFailure:
+      - type: Command
+        command: |
+          echo "Basic Dependency Failure"
+          echo "Basic Dependency Failure successfully handled"
+        timeoutInSeconds: 40
+        runAs: root 
+  - type: Command
+    timeoutInSeconds: 600
+    name: "Install Node Prereqs"
+    command: |
+      cd ${OCI_WORKSPACE_DIR}/${OCI_PRIMARY_SOURCE_NAME}
+      # install nvm
+      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
+      export NVM_DIR="$HOME/.nvm"
+      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+      nvm install lts/erbium
+      echo "NODE VERSION: $(node -v)"
+      echo "NPM VERSION: $(npm -v)"
+    onFailure:
+      - type: Command
+        command: |
+          echo "Handling Failure"
+          echo "Failure successfully handled"
+        timeoutInSeconds: 40
+        runAs: root 
+  - type: Command
+    timeoutInSeconds: 600
+    name: "NPM install"
+    command: |
+      cd ${OCI_WORKSPACE_DIR}/${OCI_PRIMARY_SOURCE_NAME}
+      # npm install
+    onFailure:
+      - type: Command
+        command: |
+          echo "Handling Failure"
+          echo "Failure successfully handled"
+        timeoutInSeconds: 40
+        runAs: root
+  - type: Command
+    timeoutInSeconds: 600
+    name: "Directory Info"
+    command: |
+      cd ${OCI_WORKSPACE_DIR}/${OCI_PRIMARY_SOURCE_NAME}
+      echo "OCI_WORKSPACE_DIR Is - ${OCI_WORKSPACE_DIR}"
+      echo "OCI_PRIMARY_SOURCE_NAME Is - ${OCI_PRIMARY_SOURCE_NAME}"
+      # ls -la
+  - type: Command
+    timeoutInSeconds: 1200
+    name: "Run Tests"
+    command: |
+      cd ${OCI_WORKSPACE_DIR}/${OCI_PRIMARY_SOURCE_NAME}
+      npm test
+  - type: Command
+    timeoutInSeconds: 600
+    name: "Generate Archive File"
+    command: | 
+      cd ${OCI_WORKSPACE_DIR}/${OCI_PRIMARY_SOURCE_NAME}
+      zip -r buildArcFiles.zip *
+      echo $PWD
+      # ls -la
+    onFailure:
+      - type: Command
+        command: |
+          echo "Generate Archive File Stage Failure"
+          echo "Generate Archive File Stage Failure successfully handled"
+        timeoutInSeconds: 40
+        runAs: root 
+outputArtifacts:
+  - name: build_artifact_archive
+    type: BINARY
+    location:  buildArcFiles.zip

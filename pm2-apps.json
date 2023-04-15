@@ -1,0 +1,12 @@
+{
+    "apps": [
+      {
+        "name": "NodeServer",
+        "script": "./bin/index.js",
+        "exec_mode": "cluster",
+        "instances": "Max",
+        "wait_ready": true,
+        "listen_timeout": 3000
+      }
+    ]
+}
