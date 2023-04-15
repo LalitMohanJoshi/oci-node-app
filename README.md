@@ -1,4 +1,4 @@
-# Node Application
+# Node Application [ Compute Instance - Oracle ]
 
 This application is built for deploying in Oracle cloud instances.
 It contains all the necessary config to run applications in the OCI environment.
